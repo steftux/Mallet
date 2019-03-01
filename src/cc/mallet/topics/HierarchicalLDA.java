@@ -76,21 +76,22 @@ public class HierarchicalLDA implements Serializable {
 		this.showProgress = showProgress;
 	}
 
-    public void initialize(InstanceList instances, InstanceList testing, int numLevels, Randoms random) {
+    public void initialize(InstanceList instances, InstanceList testing,
+						   int numLevels, Randoms random) {
 		this.instances = instances;
 		this.testing = testing;
 		this.numLevels = numLevels;
 		this.random = random;
 
 		if (! (instances.get(0).getData() instanceof FeatureSequence)) {
-			throw new IllegalArgumentException("Input must be a FeatureSequence, using the --feature-sequence option when importing data, for example");
+			throw new IllegalArgumentException("Input must be a FeatureSequence, using the --feature-sequence option when impoting data, for example");
 		}
-		
+
 		numDocuments = instances.size();
 		numTypes = instances.getDataAlphabet().size();
+	
 		etaSum = eta * numTypes;
-		
-		//System.out.println("Got " + numDocuments +" documents");
+
 		// Initialize a single path
 
 		NCRPNode[] path = new NCRPNode[numLevels];
@@ -185,7 +186,6 @@ public class HierarchicalLDA implements Serializable {
 		}
 
 		docLevels = levels[doc];
-		
 		FeatureSequence fs = (FeatureSequence) instances.get(doc).getData();
 	    
 		// Save the counts of every word at each level, and remove
@@ -468,39 +468,34 @@ public class HierarchicalLDA implements Serializable {
     public void printNodes(boolean withWeight) {
 		printNode(rootNode, 0, withWeight);
     }
-    
-    public void printNodes(boolean withWeight, String filename) throws IOException {
-    	PrintWriter printer = new PrintWriter(new BufferedWriter(new FileWriter(filename)));
-		printNodeToFile(rootNode, 0, withWeight, printer);
-		printer.flush();
-		printer.close();
-    }
 
-    public void printNodeToFile(NCRPNode node, int indent, boolean withWeight, PrintWriter printWriter ) {
+    public void printNode(NCRPNode node, int indent, boolean withWeight) {
 		StringBuffer out = new StringBuffer();
 		for (int i=0; i<indent; i++) {
 			out.append("  ");
 		}
+
 		out.append(node.totalTokens + "/" + node.customers + " ");
 		out.append(node.getTopWords(numWordsToDisplay, withWeight));
-		printWriter.println(out);	
-		for (NCRPNode child: node.children) {
-			printNodeToFile(child, indent + 1, withWeight, printWriter);
-		}
-    }
-    
-    public void printNode(NCRPNode node, int indent, boolean withWeight ) {
-		StringBuffer out = new StringBuffer();
-		for (int i=0; i<indent; i++) {
-			out.append("  ");
-		}
-		out.append(node.totalTokens + "/" + node.customers + " ");
-		out.append(node.getTopWords(numWordsToDisplay, withWeight));
-		System.out.println(out);	
+		System.out.println(out);
+	
 		for (NCRPNode child: node.children) {
 			printNode(child, indent + 1, withWeight);
 		}
     }
+    
+	public void printNodeToFile(NCRPNode node, int indent, boolean withWeight, PrintWriter printWriter) {
+		StringBuffer out = new StringBuffer();
+		for (int i = 0; i < indent; i++) {
+			out.append("  ");
+		}
+		out.append(node.totalTokens + "/" + node.customers + " ");
+		out.append(node.getTopWords(numWordsToDisplay, withWeight));
+		printWriter.println(out);
+		for (NCRPNode child : node.children) {
+			printNodeToFile(child, indent + 1, withWeight, printWriter);
+		}
+	}
 
     /** For use with empirical likelihood evaluation: 
      *   sample a path through the tree, then sample a multinomial over
